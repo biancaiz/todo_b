@@ -1,18 +1,19 @@
 #
 class TasksController < ApplicationController
+
   def index
     tasks = Task.all
     render json: tasks, each_serializer: TaskSerializer
   end
 
   def create
-    task = Task.create(create_task_params)
-    raise unless task.persisted?
-    render json: task, serializer: TaskSerializer
-    Task::NotificationSlack.notify_on_slack(task.id, "created", task.description, task.status)
-    sms_message = "You have created the task with ID: #{task.id}. The description of the task is #{task.description} and its status is #{task.status}"
-    Task::SmsNotification.sms_notify(sms_message)
-  end
+     task = Task.create(api_params(:description, :user_id, :tasktype_id))
+     raise unless task.persisted?
+     render json: task, serializer: TaskSerializer
+     #Task::NotificationSlack.notify_on_slack(task.id, "created", task.description, task.status)
+     sms_message = "You have created the task with ID: #{task.id}. The description of the task is #{task.description} and its status is #{task.status}"
+     #Task::SmsNotification.sms_notify(sms_message)
+   end
 
   def update
     task.update(status: status_params) if Task::StatusTransition.status_transition(task, status_params)
