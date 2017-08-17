@@ -16,7 +16,7 @@ class TasksController < ApplicationController
    end
 
   def update
-    task.update(status: status_params) if Task::StatusTransition.status_transition(task, status_params)
+    task.update(api_params(:status)) if Task::StatusTransition.status_transition(task, status_params)
     render json: task, serializer: TaskSerializer
     Task::NotificationSlack.notify_on_slack(task.id, "updated", task.description, task.status)
     sms_message = "You have updated the task with ID: #{task.id}. The description of the task is #{task.description} and its status is #{task.status}"
